@@ -10,7 +10,6 @@ inputs:
 
 runs:
   using: 'composite'
-  shell: bash
   steps:
     - name: Comment on PR
       run: |
