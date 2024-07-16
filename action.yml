@@ -56,7 +56,5 @@ runs:
       if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
       uses: peter-evans/create-or-update-comment@v4
       with:
-        token: ${{ inputs.repo-token }}
-        repository: ${{ github.repository }}
-        issue-number: ${{ inputs.pr-number }}
+        issue-number: 1
         body: ${{ steps.run_snyk_test.outputs.result }}
