@@ -53,8 +53,10 @@ runs:
         snyk iac test
 
     - name: 'Comment on PR with Snyk Test Output'
-      if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
-      uses: peter-evans/create-or-update-comment@v4
+      if: always()
+      uses: peter-evans/create-or-update-comment@v3
       with:
-        issue-number: 1
+        token: ${{ inputs.repo-token }}
+        repository: ${{ github.repository }}
+        issue-number: ${{ inputs.pr-number }}
         body: ${{ steps.run_snyk_test.outputs.result }}
