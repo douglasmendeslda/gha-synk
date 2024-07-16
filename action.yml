@@ -65,5 +65,5 @@ runs:
         body: |
           ## Snyk IaC Test Results
           ```
-          ${{ env.result }}
+          ${{ steps.run_snyk_test.outputs.result }}
           ```
