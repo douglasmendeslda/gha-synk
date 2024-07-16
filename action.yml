@@ -4,8 +4,9 @@ inputs:
   repo-token:
     description: 'Token to use to comment on the PR'
     required: true
-  synk-token:
-    description: 'Token to use synk' 
+  snyk-token:
+    description: 'Token to use Snyk'
+    required: true
   pr-number:
     description: 'The number of the pull request'
     required: true
@@ -27,28 +28,26 @@ runs:
         fi
         
     - name: Set up Node.js
-      if: env.TERRAFORM_FILES_FOUND == 'true'
+      if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
       uses: actions/setup-node@v4
       with:
         node-version: '22.4.1'
 
+    - name: 'Install Snyk CLI'
+      if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
+      shell: bash
+      run: npm install -g snyk
+
     - name: 'Authenticate Snyk'
-      if: env.found == 'true'
+      if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
       shell: bash
       env:
         SNYK_TOKEN: ${{ inputs.snyk-token }}
       run: snyk auth $SNYK_TOKEN
       
-    - name: 'Install Snyk CLI'
-      if: env.TERRAFORM_FILES_FOUND == 'true'
+    - name: 'Run Snyk IaC Test'
+      if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
       shell: bash
-      run: npm install -g snyk
-
-     - name: 'Run Snyk IaC Test'
-      if: env.found == 'true'
-      shell: bash
-      env:
-        SNYK_TOKEN: ${{ inputs.snyk-token }}
       run: |
         snyk iac test > snyk_output.txt || true
         echo "Snyk test output:"
