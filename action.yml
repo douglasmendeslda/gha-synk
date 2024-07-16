@@ -54,18 +54,13 @@ runs:
         echo "Snyk test output:"
         cat snyk_output.txt
         TEST_OUTPUT=$(cat snyk_output.txt)
-        echo "SNYK_TEST_OUTPUT<<EOF" >> $GITHUB_ENV
-        echo "${TEST_OUTPUT}" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-        echo "Test output captured."
-        
-    - name: Use Pull Request Decoration Action
-      if: ${{ env.SNYK_TEST_OUTPUT != '' }}
-      uses: douglasmendeslda/gha-pull-request-decoration@v1.1
-      with:
-        message: ${{ env.SNYK_TEST_OUTPUT }}
-      env:
-        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-        GITHUB_REPOSITORY_NAME: ${{ github.event.pull_request.head.repo.name }}
-        GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        echo "SNYK_TEST_OUTPUT=${TEST_OUTPUT}" >> $GITHUB_ENV
+
+    - name: Comment on PR
+      if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
+      shell: bash
+      run: |
+        curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
+        -H "Content-Type: application/json" \
+        -d '{"body":"'"${SNYK_TEST_OUTPUT}"'"}' \
+        "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.pr-number }}/comments"
