@@ -19,9 +19,9 @@ runs:
       shell: bash
       run: |
         if git ls-files '*.tf' | grep -q .; then
-          echo "found=true" >> $GITHUB_ENV
+          echo "TERRAFORM_FILES_FOUND=true" >> $GITHUB_ENV
         else
-          echo "found=false" >> $GITHUB_ENV
+          echo "TERRAFORM_FILES_FOUND=false" >> $GITHUB_ENV
         fi
         
     - name: Set up Node.js
@@ -35,5 +35,5 @@ runs:
       run: |
         curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
         -H "Content-Type: application/json" \
-        -d '{"body":"Teste"}' \
+        -d '{"body":"Hello World"}' \
         "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.pr-number }}/comments"
