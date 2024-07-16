@@ -50,19 +50,13 @@ runs:
       id: run_snyk_test
       shell: bash
       run: |
-        snyk iac test > snyk_output.txt || true
-        echo "Snyk test output:"
-        cat snyk_output.txt
+        snyk iac test
 
     - name: 'Comment on PR with Snyk Test Output'
       if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
-      uses: peter-evans/create-or-update-comment@v3
+      uses: peter-evans/create-or-update-comment@v4
       with:
         token: ${{ inputs.repo-token }}
         repository: ${{ github.repository }}
         issue-number: ${{ inputs.pr-number }}
-        body: |
-          ## Snyk IaC Test Results
-          ```
-          $(cat snyk_output.txt)
-          ```
+        body: ${{ steps.run_snyk_test.outputs.result }}
