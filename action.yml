@@ -59,11 +59,13 @@ runs:
         echo "EOF" >> $GITHUB_ENV
         echo "Test output captured."
         
-    - name: Comment on PR
-      if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
-      shell: bash
-      run: |
-        curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
-        -H "Content-Type: application/json" \
-        -d '{"body":"'"${{ env.SNYK_TEST_OUTPUT }}"'"}' \
-        "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.pr-number }}/comments"
+    - name: Use Pull Request Decoration Action
+      if: ${{ env.SNYK_TEST_OUTPUT != '' }}
+      uses: douglasmendeslda/gha-pull-request-decoration@v1.1
+      with:
+        message: ${{ env.SNYK_TEST_OUTPUT }}
+      env:
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        GITHUB_REPOSITORY_NAME: ${{ github.event.pull_request.head.repo.name }}
+        GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
