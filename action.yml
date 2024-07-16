@@ -62,10 +62,8 @@ runs:
     - name: Comment on PR
       if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
       shell: bash
-      env:
-        SNYK_TEST_OUTPUT: ${{ steps.run_snyk_test.outputs.SNYK_TEST_OUTPUT }}
       run: |
         curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
         -H "Content-Type: application/json" \
-        -d '{"body":"'"${SNYK_TEST_OUTPUT}"'"}' \
+        -d '{"body":"'"${{ env.SNYK_TEST_OUTPUT }}"'"}' \
         "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.pr-number }}/comments"
