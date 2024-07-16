@@ -53,8 +53,6 @@ runs:
         snyk iac test > snyk_output.txt || true
         echo "Snyk test output:"
         cat snyk_output.txt
-        TEST_OUTPUT=$(cat snyk_output.txt)
-        echo "SNYK_TEST_OUTPUT=${TEST_OUTPUT}" >> $GITHUB_ENV
 
     - name: 'Comment on PR with Snyk Test Output'
       if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
@@ -66,5 +64,5 @@ runs:
         body: |
           ## Snyk IaC Test Results
           ```
-          ${{ env.SNYK_TEST_OUTPUT }}
+          $(cat snyk_output.txt)
           ```
