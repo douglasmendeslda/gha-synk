@@ -35,5 +35,5 @@ runs:
       run: |
         curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
         -H "Content-Type: application/json" \
-        -d '{"body":"Hello World"}' \
+        -d '{"body":"Teste"}' \
         "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.pr-number }}/comments"
