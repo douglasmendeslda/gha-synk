@@ -11,6 +11,19 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: 'Check for .tf files'
+      id: check_tf_files
+      shell: bash
+      run: |
+        if git ls-files '*.tf' | grep -q .; then
+          echo "found=true" >> $GITHUB_ENV
+        else
+          echo "found=false" >> $GITHUB_ENV
+        fi
+
     - name: Comment on PR
       shell: bash
       run: |
