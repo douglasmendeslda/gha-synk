@@ -44,13 +44,16 @@ runs:
       env:
         SNYK_TOKEN: ${{ inputs.snyk-token }}
       run: snyk auth $SNYK_TOKEN
-
+      
     - name: 'Run Snyk IaC Test'
       if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
       id: run_snyk_test
       shell: bash
       run: |
-        snyk iac test
+        snyk iac test > snyk_output.txt
+        echo "result<<EOF" >> $GITHUB_ENV
+        cat snyk_output.txt >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
     - name: 'Comment on PR with Snyk Test Output'
       if: always()
@@ -59,4 +62,8 @@ runs:
         token: ${{ inputs.repo-token }}
         repository: ${{ github.repository }}
         issue-number: ${{ inputs.pr-number }}
-        body: ${{ steps.run_snyk_test.outputs.result }}
+        body: |
+          ## Snyk IaC Test Results
+          ```
+          ${{ env.result }}
+          ```
