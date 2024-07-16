@@ -67,5 +67,5 @@ runs:
       run: |
         curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
         -H "Content-Type: application/json" \
-        -d '{"body":"${SNYK_TEST_OUTPUT}"}' \
+        -d '{"body":"'"${SNYK_TEST_OUTPUT}"'"}' \
         "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.pr-number }}/comments"
