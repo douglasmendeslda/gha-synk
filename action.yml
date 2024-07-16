@@ -1,0 +1,19 @@
+name: 'Comment on PR'
+description: 'This action comments on a pull request with a default message'
+inputs:
+  repo-token:
+    description: 'Token to use to comment on the PR'
+    required: true
+  pr-number:
+    description: 'The number of the pull request'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Comment on PR
+      run: |
+        curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
+        -H "Content-Type: application/json" \
+        -d '{"body":"Hello World"}' \
+        "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.pr-number }}/comments"
