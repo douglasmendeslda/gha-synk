@@ -12,6 +12,7 @@ runs:
   using: 'composite'
   steps:
     - name: Comment on PR
+      shell: bash
       run: |
         curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
         -H "Content-Type: application/json" \
