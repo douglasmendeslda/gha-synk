@@ -4,6 +4,8 @@ inputs:
   repo-token:
     description: 'Token to use to comment on the PR'
     required: true
+  synk-token:
+    description: 'Token to use synk' 
   pr-number:
     description: 'The number of the pull request'
     required: true
@@ -29,11 +31,38 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: '22.4.1'
+
+    - name: 'Authenticate Snyk'
+      if: env.found == 'true'
+      shell: bash
+      env:
+        SNYK_TOKEN: ${{ inputs.snyk-token }}
+      run: snyk auth $SNYK_TOKEN
+      
+    - name: 'Install Snyk CLI'
+      if: env.TERRAFORM_FILES_FOUND == 'true'
+      shell: bash
+      run: npm install -g snyk
+
+     - name: 'Run Snyk IaC Test'
+      if: env.found == 'true'
+      shell: bash
+      env:
+        SNYK_TOKEN: ${{ inputs.snyk-token }}
+      run: |
+        snyk iac test > snyk_output.txt || true
+        echo "Snyk test output:"
+        cat snyk_output.txt
+        TEST_OUTPUT=$(cat snyk_output.txt)
+        echo "SNYK_TEST_OUTPUT<<EOF" >> $GITHUB_ENV
+        echo "${TEST_OUTPUT}" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+        echo "Test output captured."
         
     - name: Comment on PR
       shell: bash
       run: |
         curl -X POST -H "Authorization: token ${{ inputs.repo-token }}" \
         -H "Content-Type: application/json" \
-        -d '{"body":"Hello World"}' \
+        -d '{"body":"**Snyk IaC Test Output:**\n```'${{ env.SNYK_TEST_OUTPUT }}'```"}' \
         "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.pr-number }}/comments"
