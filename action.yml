@@ -68,23 +68,15 @@ runs:
         echo "${TEST_OUTPUT}" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
         echo "Test output captured."
-          
-    - name: Check if Snyk Test Output is Empty
-      shell: bash
-      run: |
-        if [ -z "${{ env.SNYK_TEST_OUTPUT }}" ]; then
-          echo "Snyk test output is empty. Exiting."
-          exit 1
-        fi
-
-    - name: Use Pull Request Decoration Action
-      shell: bash
-      if: ${{ env.SNYK_TEST_OUTPUT != '' }}
-      uses: douglasmendeslda/gha-pull-request-decoration@v1.1
+        
+    - name: Add comment to the Pull Request
+      uses: actions/github-script@v6
       with:
-        message: ${{ env.SNYK_TEST_OUTPUT }}
-      env:
-        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-        GITHUB_REPOSITORY_NAME: ${{ github.event.pull_request.head.repo.name }}
-        GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-        GITHUB_TOKEN: ${{ inputs.repo-token }}
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: 'Thank you for opening this Pull Request! We are reviewing it.'
+          })
+          
