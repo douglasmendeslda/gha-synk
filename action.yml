@@ -60,5 +60,6 @@ runs:
         REPO_TOKEN: ${{ inputs.repo-token }}
         PR_NUMBER: ${{ inputs.pr-number }}
       run: |
+        cd ..
         ls -l
         python3 comment_pr.py $REPO_TOKEN $PR_NUMBER
