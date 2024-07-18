@@ -20,6 +20,9 @@ permissions:
   contents: read
   issues: write
   pull-requests: write
+  
+env:
+  SNYK_TEST_OUTPUT: ${{ env.SNYK_TEST_OUTPUT }}
 
 runs:
   using: 'composite'
@@ -77,6 +80,7 @@ runs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: 'Thank you for opening this Pull Request! We are reviewing it.'
+            body: `\n\n### Snyk Test Output:\n\`\`\`\n${process.env.SNYK_TEST_OUTPUT}\n\`\`\``
+
           })
           
