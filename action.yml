@@ -57,6 +57,7 @@ runs:
       
     - name: Run Snyk Test
       id: snyk-test
+      shell: bash
       if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
       run: |
         snyk iac test > snyk_output.txt || true
@@ -69,6 +70,7 @@ runs:
         echo "Test output captured."
           
     - name: Check if Snyk Test Output is Empty
+      shell: bash
       run: |
         if [ -z "${{ env.SNYK_TEST_OUTPUT }}" ]; then
           echo "Snyk test output is empty. Exiting."
@@ -76,6 +78,7 @@ runs:
         fi
 
     - name: Use Pull Request Decoration Action
+      shell: bash
       if: ${{ env.SNYK_TEST_OUTPUT != '' }}
       uses: douglasmendeslda/gha-pull-request-decoration@v1.1
       with:
