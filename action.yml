@@ -51,10 +51,7 @@ runs:
       shell: bash
       run: |
         snyk iac test > snyk_output.txt
-        echo "result<<EOF" >> $GITHUB_ENV
-        cat snyk_output.txt >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-
+        cat snky_output.txt
     - name: Comment on Pull Request
       if: always()
       shell: bash
