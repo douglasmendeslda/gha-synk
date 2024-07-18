@@ -1,5 +1,5 @@
 name: 'Snyk Scan'
-description: 'This action comments on a pull request with a default message'
+description: 'This action comments on a pull request with the Snyk scan result'
 
 inputs:
   repo-token:
@@ -11,18 +11,11 @@ inputs:
   pr-number:
     description: 'The number of the pull request'
     required: true
-  message:
-    description: 'The message to comment on the pull request'
-    required: true
-    default: 'Hello World'
 
 permissions:
   contents: read
   issues: write
   pull-requests: write
-  
-env:
-  SNYK_TEST_OUTPUT: ${{ env.SNYK_TEST_OUTPUT }}
 
 runs:
   using: 'composite'
@@ -57,7 +50,7 @@ runs:
       env:
         SNYK_TOKEN: ${{ inputs.snyk-token }}
       run: snyk auth $SNYK_TOKEN
-      
+
     - name: Run Snyk Test
       id: snyk-test
       shell: bash
@@ -67,7 +60,7 @@ runs:
         echo "Snyk test output:"
         cat snyk_output.txt
         TEST_OUTPUT=$(cat snyk_output.txt)
-        echo "SNYK_TEST_OUTPUT<<EOF" >> $GITHUB_ENV
+        echo "TEST_OUTPUT<<EOF" >> $GITHUB_ENV
         echo "${TEST_OUTPUT}" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
         echo "Test output captured."
@@ -75,12 +68,13 @@ runs:
     - name: Add comment to the Pull Request
       uses: actions/github-script@v6
       with:
+        github-token: ${{ inputs.repo-token }}
         script: |
+          const fs = require('fs');
+          const output = fs.readFileSync('snyk_output.txt', 'utf8');
           github.rest.issues.createComment({
-            issue_number: context.issue.number,
+            issue_number: ${{ inputs.pr-number }},
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `\n\n### Snyk Test Output:\n\`\`\`\n${process.env.SNYK_TEST_OUTPUT}\n\`\`\``
-
-          })
-          
+            body: `### Snyk Test Output:\n\`\`\`\n${output}\n\`\`\``
+          });
