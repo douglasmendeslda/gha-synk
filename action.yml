@@ -1,5 +1,6 @@
-name: 'Comment on PR'
+name: 'Snyk Scan'
 description: 'This action comments on a pull request with a default message'
+
 inputs:
   repo-token:
     description: 'Token to use to comment on the PR'
@@ -10,8 +11,20 @@ inputs:
   pr-number:
     description: 'The number of the pull request'
     required: true
+  message:
+    description: 'The message to comment on the pull request'
+    required: true
+    default: 'Hello World'
+
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 
 runs:
+
   using: 'composite'
   steps:
     - name: Checkout code
@@ -45,20 +58,34 @@ runs:
         SNYK_TOKEN: ${{ inputs.snyk-token }}
       run: snyk auth $SNYK_TOKEN
       
-    - name: 'Run Snyk IaC Test'
-      if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
-      id: run_snyk_test
-      shell: bash
-      run: |
-        snyk iac test > snyk_output.txt
-        cat snky_output.txt
+      - name: Run Snyk Test
+        id: snyk-test
+        if: ${{ env.TERRAFORM_FILES_FOUND == 'true' }}
+        run: |
+          snyk iac test > snyk_output.txt || true
+          echo "Snyk test output:"
+          cat snyk_output.txt
+          TEST_OUTPUT=$(cat snyk_output.txt)
+          echo "SNYK_TEST_OUTPUT<<EOF" >> $GITHUB_ENV
+          echo "${TEST_OUTPUT}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "Test output captured."
+          
+      - name: Check if Snyk Test Output is Empty
+        run: |
+          if [ -z "${{ env.SNYK_TEST_OUTPUT }}" ]; then
+            echo "Snyk test output is empty. Exiting."
+            exit 1
+          fi
 
-    - name: Comment on Pull Request
-      if: always()
-      shell: bash
-      env:
-        REPO_TOKEN: ${{ inputs.repo-token }}
-        PR_NUMBER: ${{ inputs.pr-number }}
-      run: |
-        ls -l
-        python3 comment_pr.py $REPO_TOKEN $PR_NUMBER
+
+      - name: Use Pull Request Decoration Action
+        if: ${{ env.SNYK_TEST_OUTPUT != '' }}
+        uses: douglasmendeslda/gha-pull-request-decoration@v1.1
+        with:
+          message: ${{ env.SNYK_TEST_OUTPUT }}
+        env:
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPOSITORY_NAME: ${{ github.event.pull_request.head.repo.name }}
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
