@@ -55,15 +55,10 @@ runs:
         cat snyk_output.txt >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
 
-    - name: 'Comment on PR with Snyk Test Output'
-      if: always()
-      uses: peter-evans/create-or-update-comment@v3
-      with:
-        token: ${{ inputs.repo-token }}
-        repository: ${{ github.repository }}
-        issue-number: ${{ inputs.pr-number }}
-        body: |
-          ## Snyk IaC Test Results
-          ```
-          ${{ steps.run_snyk_test.outputs.result }}
-          ```
+    - name: Comment on Pull Request
+      shell: bash
+      env:
+        REPO_TOKEN: ${{ inputs.repo-token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+      run: |
+        python3 comment_pr.py $REPO_TOKEN $PR_NUMBER
