@@ -52,6 +52,7 @@ runs:
       run: |
         snyk iac test > snyk_output.txt
         cat snky_output.txt
+
     - name: Comment on Pull Request
       if: always()
       shell: bash
@@ -59,4 +60,5 @@ runs:
         REPO_TOKEN: ${{ inputs.repo-token }}
         PR_NUMBER: ${{ inputs.pr-number }}
       run: |
+        ls -l
         python3 comment_pr.py $REPO_TOKEN $PR_NUMBER
